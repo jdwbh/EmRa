@@ -1,0 +1,422 @@
+############王斌会《计量经济学时间序列R语言分析》############
+{### 数据：Retsa.xls  代码：Retsa.txt
+rm(list=ls())
+detach(TAXdata)
+options(digits=4)
+par(mar=c(4,4,2,1)+0.1,cex=0.75)
+source('E:\\F\\myR\\ETS\\Retsa.R')
+#dat=read.table('clipboard',header=TRUE);dat
+#D31=read.excel("ExcelR.xlsx","D31");D31
+TAXdata=read.csv("Retsa_TAX.csv",header=T);TAXdata
+attach(TAXdata)
+t=1:nrow(TAXdata); t
+T=as.numeric(row.names(TAXdata));T  #时间变量
+#Taxnames=names(Taxdata); #保存原变量名
+#names(Taxdata)=c('税收','生产总值','财政支出','进出口额','零售总额','居民消费','固定资产','居民存款') #定义中文变量名
+} 
+POPD=c(rep(0,12),rep(1,21))
+cbind(i,T,POP,POPD)
+
+matplot(T,TAXdata,type='o')
+matplot(T,log(TAXdata),type='o')
+plot(TAXdata,gap=0)
+fm=lm(TAX~.-POP+POPD,TAXdata);summary(fm)
+fm=lm(TAX~+POPD,TAXdata);summary(fm)
+step(fm)
+fm=lm(TAX~GDP+EXP,TAXdata);summary(fm)
+cor(TAXdata)
+
+{###第2章 一元线性回归模型
+#例2.2
+plot(TAX~GDP)
+lm2.2=lm(TAX~GDP)
+summary(lm2.2)
+abline(lm2.2)
+#例2.3
+plot(TAXdata,gap=0)
+lm2.3=lm(TAX~GDP+EXP+IE+RS+COM+INV+DEP);lm2.3
+summary(lm2.3)
+
+cor(GDP,TAX)
+cor.test(GDP,TAX)
+
+plot(TAXdata,gap=0,cex.labels=0.75)
+cor(TAXdata)
+
+(R2=summary(lm2.3)$r.sq)
+[1] 0.9998
+(R=sqrt(R2))
+[1] 0.9999
+
+
+summary(lm(CZ~CS,data=dat))
+summary(lm(SLC~GDPS,data=dat))
+lm(LB~GDPS-1,data=dat)
+lm(ZJ~GDPS-1,data=dat)
+lm(SE~GDPS-1,data=dat)
+lm(YY~GDPS-1,data=dat)
+lm.tp(lm(CS~SE,data=dat))
+lm.tp(lm(CS~SE+LB,data=dat))
+fm=lm(GDPS~T,data=dat);fm
+predict(fm)
+predict(fm,data.frame(T=29:33))
+}
+{###第3章 多元线性回归模型
+#例3.1
+x1=c(10,8,13,9,11,14,6,4,12,7,5)
+y1=c(8.04,6.95,7.58,8.81,8.33,9.96,7.24,4.26,10.84,4.82,5.68)
+y2=c(9.14,8.14,8.74,8.77,9.26,8.1,6.13,3.1,9.13,7.26,4.74)
+y3=c(7.46,6.77,12.74,7.11,7.81,8.84,6.08,5.39,8.15,6.44,5.73)
+x2=c(8,8,8,8,8,8,8,19,8,8,8)
+y4=c(6.58,5.76,7.71,8.84,8.47,7.04,5.25,12.5,5.56,7.91,6.89)
+
+M1=lm(y1~x1);summary(M1)#lm.test(M1)
+M2=lm(y2~x1);summary(M2)
+M3=lm(y3~x1);summary(M3)
+M4=lm(y4~x2);summary(M4)
+
+par(mfrow=c(2,2))
+plot(y1~x1);abline(M1)
+plot(y2~x1);abline(M2)
+plot(y3~x1);abline(M3)
+plot(y4~x2);abline(M4)
+par(mfrow=c(1,1))
+
+#异常值
+e1=resid(M1);e2=resid(M2);e3=resid(M3);e4=resid(M4) #残差
+round(cbind(e1,e2,e3,e4),4)
+
+par(mfrow=c(2,2),cex=0.75) #分别做残差图
+plot(e1,type='h',lty=3);points(e1);abline(h=0)
+plot(e2,type='h',lty=3);points(e2);abline(h=0)
+plot(e3,type='h',lty=3);points(e3);abline(h=0)
+plot(e4,type='h',lty=3);points(e4);abline(h=0)
+par(mfrow=c(1,1))   
+
+par(mfrow=c(2,2),cex=0.75) #分别做残差的正态概率QQ图
+qqnorm(e1,main='M1');qqline(e1)
+qqnorm(e2,main='M2');qqline(e2)
+qqnorm(e3,main='M3');qqline(e3)
+qqnorm(e4,main='M4');qqline(e4)
+par(mfrow=c(1,1))   
+
+r1=rstudent(M1);r2=rstudent(M2);r3=rstudent(M3);r4=rstudent(M4); #学生化残差
+cbind(r1,r2,r3,r4)
+
+par(mfrow=c(2,2),cex=0.75) #分别做学生化残差图
+plot(r1,type='h',lty=3);points(r1);abline(h=0)
+plot(r2,type='h',lty=3);points(r2);abline(h=0)
+plot(r3,type='h',lty=3);points(r3);abline(h=0)
+plot(r4,type='h',lty=3);points(r4);abline(h=0)
+par(mfrow=c(1,1))   
+
+#library(MASS) influence.measures(M1)
+
+lm.diag(M1)
+lm.diag(M2)
+lm.diag(M3)
+lm.diag(M4)
+
+cbind(r1=rstudent(M1),hi=Leverage(M1))
+
+par(mfrow=c(2,2),cex=0.75) 
+e2.3=resid(lm2.3)
+hist(e2.3)
+qqnorm(e2.3);qqline(e2.3)
+plot(e2.3,type='h',lty=3);points(e2.3);abline(h=0)
+plot(rstudent(lm2.3),type='h',lty=3);points(rstudent(lm2.3));abline(h=0)
+par(mfrow=c(1,1)) 
+lm.diag(lm2.3)
+
+cbind(lm.diag(lm2.3),influence.measures(lm2.3)$infmat[,10:12])
+
+
+
+#多重共线性
+lm.test(lm(TAX~GDP))
+round(summary(lm(TAX~GDP))$coef,4)
+round(summary(lm(TAX~GDP+EXP))$coef,4)
+round(summary(lm(TAX~GDP+EXP+IE))$coef,4)
+round(summary(lm(TAX~GDP+EXP+IE+RS))$coef,4)
+round(summary(lm(TAX~GDP+EXP+IE+RS+COM))$coef,4)
+round(summary(lm(TAX~GDP+EXP+IE+RS+COM+INV))$coef,4)
+round(summary(lm(TAX~GDP+EXP+IE+RS+COlm.plot<-function(LM,x=1:nrow(LM$model)){  # 拟合值和学生化残差
+  par(mfrow=c(2,1),cex=0.75,mar=c(1,4,2,1)+0.1)
+    matplot(x,cbind(LM$model[1],fitted(LM)),type='l',lty=c(3,1),lwd=2,ylab=names(LM$model[1]));
+    title(paste(" ... Actual ", " --- Fitted "),cex.main=1)
+    #plot(x,LM$model[1]);lines(x,fitted(LM));
+    #plot(x,rstudent(LM),axes = FALSE,ylim=c(-4,4),type='b',ylab='rstudent'); abline(h=0)
+    plot(x,rstudent(LM),axes = FALSE,frame.plot = TRUE,ylim=c(-4,4),type='o',ylab='rstudent'); 
+    abline(h=c(-3,0,3),lty=3,col='blue');axis(2, at = seq(-4,4,by=1))
+  par(mfrow=c(1,1))
+} 
+M+INV+DEP))$coef,4)
+
+X=TAXdata[,2:8] #取自变量
+cor(X)
+(lamda=eigen(cor(X))$value)       #特征值法eigen
+(CN=max(lamda)/min(lamda))        #条件数法
+GDP~EXP+IE+RS+COM+INV+DEP
+R2=summary(lm(GDP~EXP+IE+RS+COM+INV+DEP))$r.sq    #的决定系数
+(VIF1=1/(1-R2))                  #方差扩大因子VIF1
+det(cor(X))                       #行列式法Det
+
+#异方差
+plot(GDP~IE)
+fm=lm(GDP~IE);summary(fm)
+lm.plot(fm,T)
+e=resid(fm); #模型残差
+D.W(e)
+#plot(r,type='l'); #abline(h=0)
+e2=e^2
+par(mfcol=c(1,2),mar=c(4,4,1,1)+0.1,cex=0.75)
+plot(e2~IE)
+plot(e2~GDP)
+par(mfcol=c(1,1))
+
+n=length(e2)
+R2= summary(lm(e2~GDP+I(GDP^2)))$r.sq;R2
+W=n*R2;W
+P=1-pchisq(W,2);P
+
+White.test(lm(e2~GDP+I(GDP^2)))
+
+abs.e=abs(e)
+L1=lm(abs.e~I(IE^2)); lm.test(L1)
+L2=lm(abs.e~I(IE^3)); lm.test(L2)
+L3=lm(abs.e~I(sqrt(IE))); lm.test(L3)
+L4=lm(abs.e~I(1/IE)); lm.test(L4)
+L5=lm(abs.e~I(1/sqrt(IE))); lm.test(L5)
+
+fm1=lm(GDP~IE,weight=1/abs(e)); summary(fm1)
+lm.plot(fm1)
+
+White.test(lm(fm1$resid^2~IE+I(IE^2)))
+
+#自相关
+plot(TAX~GDP)
+fm=lm(TAX~GDP);summary(fm)
+lm.plot(fm)
+e=resid(fm); #模型残差
+D.W(e2.3)
+par(mfcol=c(1,2),mar=c(4,4,1,1)+0.1,cex=0.75)
+ plot(e2.3~Lag(e2.3,1));#abline(lm(e2.3~Lag(e2.3)))
+ plot(e2.3~Lag(e2.3,2));#abline(lm(e2.3~Lag(e2.3,2)))
+par(mfcol=c(1,1))
+
+#install.packages("lmtest") #library(lmtest)
+DW.test(lm2.3)
+
+
+plot(GDPB~ZC,data=dat)
+plot(GDPB~RY,data=dat)
+summary(lm(GDPB~ZC,data=dat))
+summary(lm(GDPB~ZC+RY,data=dat))
+summary(lm(LB~-1+GDPS+T,data=dat))
+summary(lm(ZJ~-1+GDPS+T,data=dat))
+summary(lm(SE~-1+GDPS+T,data=dat))
+summary(lm(XFJ~LB,data=dat))
+plot(XFJ~YY,data=dat)
+summary(lm(XFJ~LB+YY,data=dat))
+summary(lm(TZG~ZJ+YY+CZ,data=dat))
+summary(lm(TZG~ZJ+YY,data=dat))
+summary(lm(TZG~ZJ+CZ,data=dat))
+summary(lm(TZG~YY+CZ,data=dat))
+plot(CK~GDP,data=dat)
+summary(lm(CK~GDP,data=dat))
+summary(lm(CK~GDP+LL,data=dat))
+summary(lm(TZC~CX+PSL,data=dat))
+plot(GDPS~T,data=dat)
+fm1=lm(GDPS~T,data=dat);summary(fm1)
+predict(fm1,data.frame(T=29:33))
+plot(log(GDPS)~T,data=dat)
+fm2=lm(log(GDPS)~T,data=dat);summary(fm2)
+exp(predict(fm2,data.frame(T=29:33)))
+plot(CS~T,data=dat)
+plot(log(CS)~T,data=dat)  # 应该做非线性模型nls
+fm3=lm(log(CS)~T,data=dat);summary(fm3)
+abline(fm3)
+plot(log(GDPS)~log(ZC),data=dat)  # 应该做非线性模型nls
+plot(log(GDPB)~log(RY),data=dat)  # 应该做非线性模型nls
+fm4=lm(log(GDPB)~log(ZC)+log(RY),data=dat);summary(fm4)
+}
+{###第4章 自相关性
+fm=lm(CS~GDPS,dat);summary(fm)
+r=resid(fm);D.W(r)
+plot(r,type='l'); #abline(h=0)
+plot(r~Lag(r)); abline(lm(r~Lag(r)))
+fm=lm(CZ~CS,dat);summary(fm)
+r=resid(fm);D.W(r)
+plot(r,type='l'); #abline(h=0)
+plot(r~Lag(r));abline(lm(r~Lag(r)))
+fm=lm(SLC~GDPS,dat);summary(fm)
+r=resid(fm);D.W(r)
+plot(r,type='l'); #abline(h=0)
+plot(r~Lag(r));abline(lm(r~Lag(r)))
+fm=lm(SLC~GDPS+Lag(SLC),dat);summary(fm)
+r=resid(fm);D.W(r)
+#arima.test(arima(dat$SLC,order=c(1,0,0),xreg=dat$GDPS))
+fm=lm(SLC~GDPS+Lag(SLC)+Lag(SLC,2),dat);summary(fm)
+r=resid(fm);D.W(r)
+fm=lm(log(CS)~T,dat);summary(fm)
+r=resid(fm);D.W(r)
+plot(r,type='l'); #abline(h=0)
+plot(r~Lag(r));abline(lm(r~Lag(r)))
+fm=lm(SE~-1+GDPS,dat);summary(fm)
+r=resid(fm);D.W(r)
+plot(r,type='l'); #abline(h=0)
+plot(r~Lag(r));abline(lm(r~Lag(r)))
+fm=lm(log(GDPS)~T,dat);summary(fm)
+r=resid(fm);D.W(r)
+plot(r,type='l'); #abline(h=0)
+plot(r~Lag(r));abline(lm(r~Lag(r)))
+fm=lm(log(GDPS)~T+Lag(log(GDPS)),dat);summary(fm)
+r=resid(fm);D.W(r)
+fm=lm(log(GDPS)~T+Lag(log(GDPS))+Lag(log(GDPS),2),dat);summary(fm)
+r=resid(fm);D.W(r)
+}
+{###第5章 异方差性
+
+fm=lm(log(r^2)~log(CS),dat);summary(fm)
+fm=lm(log(r^2)~log(CS)-1,dat);summary(fm)
+
+fm=lm(ZJ~T+GDPS,dat);summary(fm)
+r=resid(fm);D.W(r)
+plot(r,type='l'); #abline(h=0)
+plot(r^2~ZJ,dat);
+fm=lm(log(r^2)~log(GDPS)-1,dat);summary(fm)
+#Glejser
+fm=lm(CZ~CS,dat);summary(fm)
+r=resid(fm);D.W(r)
+summary(lm(abs(r)~CS,dat))
+summary(lm(abs(r)~CS-1,dat))
+summary(lm(abs(r)~I(CS^2),dat))
+summary(lm(abs(r)~I(CS^(1/2))-1,dat))
+summary(lm(abs(r)~I(CS^(-1)),dat))
+summary(lm(CZ~CS,dat))
+summary(lm(CZ~CS,weight=1/sqrt(CS),dat))
+fm=lm(CZ/CS^(1/2)~I(CS/CS^(1/2))+I(1/CS^(1/2))-1,dat);summary(fm)
+r=resid(fm);D.W(r)
+plot(r,type='l'); #abline(h=0)
+fm=lm(CZ/CS~I(1/CS),dat);summary(fm)
+r=resid(fm);D.W(r)
+plot(r,type='l'); #abline(h=0)
+
+fm=lm(ZJ~T+GDPS-1,weight=1/CS^(3/8),dat);summary(fm)
+r=resid(fm);D.W(r)
+plot(r,type='l'); #abline(h=0)
+
+fm=lm(ZJ/CS^(3/8)~I(T/CS^(3/8))+I(GDPS/CS^(3/8))-1,dat);summary(fm)
+r=resid(fm);D.W(r)
+plot(r,type='l'); #abline(h=0)
+
+fm=lm(ZJ/GDPS~I(T/GDPS),dat);summary(fm)
+r=resid(fm);D.W(r)
+plot(r,type='l'); #abline(h=0)
+}
+{###第6章 多重共线性
+fm=lm(CS~GDP1+GDP2+GDP3,dat);summary(fm)
+fm=lm(TZG~ZJ+YY+CZ,dat);summary(fm)
+with(dat,cor(cbind(GDP1,GDP2,GDP3)))
+with(dat,pairs(cbind(GDP1,GDP2,GDP3)))
+with(dat,cor(cbind(ZJ,YY,CZ)))
+with(dat,pairs(cbind(ZJ,YY,CZ)))
+
+summary(lm(GDP1~GDP2+GDP3,dat))$r.sq
+summary(lm(GDP2~GDP1+GDP3,dat))$r.sq
+summary(lm(GDP3~GDP1+GDP2,dat))$r.sq
+
+summary(lm(ZJ~YY+CZ,dat))$r.sq
+summary(lm(YY~ZJ+CZ,dat))$r.sq
+summary(lm(CZ~ZJ+YY,dat))$r.sq
+
+summary(lm(log(CS)~log(GDP2)+I(GDP1+3*GDP3),dat))
+summary(lm(TZG~CZ+I(ZJ+YY),dat))
+}
+{###第7章 误差修正模型
+x=GDP
+lm.test(lm(x~t+Lag(x)+Dif(Lag(x))+Dif(Lag(x,2))))
+lm.test(lm(x~Lag(x)+Lag(Dif(x))))
+
+fm=lm(CX~Lag(CX)+GDPS,dat);summary(fm)
+fm=lm(CX~lag(CX,1)+GDPS,dat);summary(fm)
+fm=lm(CX~Lag(CX)+LB+RK,dat);summary(fm)
+fm=lm(CZ~Lag(CZ)+CS,dat);summary(fm)
+fm=lm(XFZ~Lag(XFZ)+CZ,dat);summary(fm)
+
+library(tseries)
+adf.test(dat$RJSR)
+adf.test(diff(dat$RJSR))
+adf.test(diff(log(dat$RJSRS)))
+plot(log(RJSRS)~T,dat,type='l');lines(log(RJXFS)~T,dat,lty=3)
+plot(Diff(log(RJSRS))~T,dat,type='l');lines(Diff(log(RJXFS))~T,dat,lty=3)
+fm=lm(log(RJXFS)~Lag(log(RJXFS))+log(RJSRS),dat);summary(fm)
+r=resid(fm);D.W(r)
+adf.test(r)
+fm=lm(diff(log(RJXFS))~-1+diff(Lag(log(RJXFS)))+diff(log(RJSRS))+Lag(r),dat);summary(fm)
+}
+{###第8章 虚拟变量
+summary(lm(CX~Lag(CX)+GDPS,dat))
+summary(lm(CX~Lag(CX)+GDPS+D00,dat))
+fm=lm(CS~SE,dat);summary(fm)
+lm.plot(fm,dat$T)
+fm=lm(CS~SE+DD94,dat);summary(fm)
+lm.plot(fm,dat$T)
+fm=lm(CS~SE+D94,dat);summary(fm)
+lm.plot(fm,dat$T)
+summary(lm(CZ~Lag(CZ)+CS,dat))
+summary(lm(CZ~Lag(CZ)+CS+D00,dat))
+}
+{###第9章 联立方程
+summary(lm(log(CS)~T+D93+Lag(log(CS)),dat))
+summary(lm(CZ~CS+Lag(CZ)+D00,dat))
+summary(lm(SLC~GDPS+Lag(SLC)+Lag(SLC,2),dat))
+summary(lm(log(GDPB)~log(ZC)+log(RY)+Lag(log(GDPB)),dat))
+summary(lm(CX~Lag(CX)+GDPS+D00,dat))
+################################################
+summary(lm(log(CS)~T+D93,dat))$coef
+summary(lm(CZ~CS+Lag(CZ)+D00,dat))$coef
+summary(lm(SLC~GDPS,dat))$coef
+summary(lm(log(GDPB)~log(ZC)+log(RY),dat))$coef
+summary(lm(CX~Lag(CX)+GDPS+D00,dat))$coef
+##########################################################
+summary(lm(log(CS)~T+D93+Lag(log(CS)),dat))$coef
+summary(lm(CZ/CS~I(Lag(CZ)/CS)+I(1/CS)+I(D00/CS),dat))$coef
+summary(lm(SLC~GDPS+Lag(SLC)+Lag(SLC,2),dat))$coef
+summary(lm(log(GDPB)~log(ZC)+log(RY),dat))$coef
+summary(lm(CX~Lag(CX)+GDPS+D00,dat))$coef
+################################################
+summary(lm(log(ZC)~T+Lag(log(ZC)),dat))$coef
+summary(lm(log(RY)~Lag(log(RY)),dat))$coef
+summary(lm(log(GDPH)~Lag(log(GDPH)),dat))$coef
+################################################
+summary(lm(LB~GDP+T+Lag(LB)-1,dat))$coef
+summary(lm(ZJ~GDP+T+Lag(ZJ)-1,dat))$coef
+summary(lm(SE~GDP+Lag(SE)-1,dat))$coef
+summary(lm(CX~Lag(CX)+LB+RK+D00,dat))$coef
+########################################################
+summary(lm(RK~Lag(RK)+T+D00,dat))$coef
+summary(lm(PSL~Lag(PSL)+Lag(PSL,2)+Lag(PSL,3),dat))$coef
+summary(lm(LL~Lag(LL)+Lag(LL,2)+D00,dat))$coef
+########################################################
+summary(lm(TZC~Lag(TZC,2)+c(NA,diff(CX))+c(NA,diff(Lag(CX,2)))+PSL+LL,dat))$coef
+summary(lm(CK~Lag(CK,2)+GDP+LL+TZC,dat))$coef
+}
+###面板数据包plm: Title Linear Models for Panel Data
+###联立方程包systemfit: Estimating Systems of Simultaneous Equations
+###例子见Applied+Econometrics+with+R.pdf
+
+###5.2.2 ARCH模型实证分析
+SIdata=read.csv("Retsa_SI.csv",header=T);
+y=ts(SIdata,star=c(2003,1,2),frequency=365);
+Rt=diff(log(y));Rt
+hist(Rt,breaks=50,main="")
+qqnorm(Rt);qqline(Rt)
+plot(Rt)
+library(tseries)
+adf.test(Rt)
+ga=garch(Rt,order=c(0,1))
+summary(ga)
+ga$reisd
+ga$resid[3:n]
+
